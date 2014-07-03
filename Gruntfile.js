@@ -82,12 +82,23 @@ module.exports = function (grunt) {
         report: 'min',
         sourceMap: false
       },
-      dist: {
+      distMin: {
         files: {
           './tags.min.js': ['tags.js']
         }
       },
+      // Just concatinate
       distTpls: {
+        options: {
+          preserveComments: true,
+          mangle: false, 
+          compress: false,
+        },
+        files: {
+          './tags.tpls.js': ['temp/templates.js', 'tags.js']
+        }
+      },
+      distMinTpls: {
         files: {
           './tags.tpls.min.js': ['temp/templates.js', 'tags.js']
         }
@@ -145,7 +156,7 @@ module.exports = function (grunt) {
     ]);
   grunt.registerTask('dev',
     ['build', 'jshint', 'bower-install-simple', 'karma:dev', 'watch']);
-  grunt.registerTask('build', ['less', 'html2js', 'uglify']);
+  grunt.registerTask('build', ['less', 'html2js', 'uglify', 'uglify:distTpls']);
   grunt.registerTask('default', ['build']);
 
 };
