@@ -13,7 +13,8 @@
 
   var defaultOptions = {
       delimiter: ',', // if given a string model, it splits on this
-      classes: {} // obj of group names to classes
+      classes: {}, // obj of group names to classes
+      templateUrl: 'templates/tags.html'
     },
 
   // for parsing comprehension expression
@@ -346,12 +347,14 @@
     ['$document', '$timeout', '$parse', 'decipherTagsOptions',
      function ($document, $timeout, $parse, decipherTagsOptions) {
 
+       var options = angular.extend(angular.copy(defaultOptions), decipherTagsOptions);
+
        return {
          controller: 'TagsCtrl',
          restrict: 'E',
          replace: true,
          // IE8 is really, really fussy about this.
-         template: '<div><div data-ng-include="\'templates/tags.html\'"></div></div>',
+         template: '<div><div data-ng-include="\''+options.templateUrl+'\'"></div></div>',
          scope: {
            model: '='
          },
@@ -553,8 +556,7 @@
              };
 
            // merge options
-           scope.options = angular.extend(defaults,
-             angular.extend(userDefaults, scope.$eval(attrs.options)));
+           scope.options = angular.extend(options, scope.$eval(attrs.options));
            // break out orderBy for view
            scope.orderBy = scope.options.orderBy;
 
