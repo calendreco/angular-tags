@@ -1,6 +1,7 @@
 /*global angular*/
 (function(){"use strict";try{angular.module("badwing.tags.templates")}catch(e){angular.module("badwing.tags.templates",[])}var tags=angular.module("badwing.tags",["ui.bootstrap.typeahead","badwing.tags.templates"]);var defaultOptions={delimiter:",",// if given a string model, it splits on this
-classes:{}},// for parsing comprehension expression
+classes:{},// obj of group names to classes
+templateUrl:"templates/tags.html"},// for parsing comprehension expression
 SRC_REGEXP=/^\s*(.*?)(?:\s+as\s+(.*?))?\s+for\s+(?:([\$\w][\$\w\d]*))\s+in\s+(.*)$/,// keycodes
 kc={enter:13,esc:27,backspace:8},kcCompleteTag=[kc.enter],kcRemoveTag=[kc.backspace],kcCancelInput=[kc.esc],id=0;tags.constant("decipherTagsOptions",{});/**
    * TODO: do we actually share functionality here?  We're using this
@@ -78,8 +79,8 @@ ngModel.$parsers.unshift(function(value){var values=value.split(scope.options.de
 ngModel.$formatters.push(function(tag){if(tag&&tag.value){element.val("");return}return tag})}}}]);/**
    * Main directive
    */
-tags.directive("tags",["$document","$timeout","$parse","decipherTagsOptions",function($document,$timeout,$parse,decipherTagsOptions){return{controller:"TagsCtrl",restrict:"E",replace:true,// IE8 is really, really fussy about this.
-template:"<div><div data-ng-include=\"'templates/tags.html'\"></div></div>",scope:{model:"="},link:function(scope,element,attrs){var srcResult,source,tags,group,i,tagsWatch,srcWatch,modelWatch,model,pureStrings=false,stringArray=false,defaults=angular.copy(defaultOptions),userDefaults=angular.copy(decipherTagsOptions),/**
+tags.directive("tags",["$document","$timeout","$parse","decipherTagsOptions",function($document,$timeout,$parse,decipherTagsOptions){var options=angular.extend(angular.copy(defaultOptions),decipherTagsOptions);return{controller:"TagsCtrl",restrict:"E",replace:true,// IE8 is really, really fussy about this.
+template:"<div><div data-ng-include=\"'"+options.templateUrl+"'\"></div></div>",scope:{model:"="},link:function(scope,element,attrs){var srcResult,source,tags,group,i,tagsWatch,srcWatch,modelWatch,model,pureStrings=false,stringArray=false,defaults=angular.copy(defaultOptions),userDefaults=angular.copy(decipherTagsOptions),/**
               * Parses the comprehension expression and gives us interesting bits.
               * @param input
               * @returns {{itemName: *, source: *, viewMapper: *, modelMapper: *}}
@@ -102,7 +103,7 @@ format=function format(value){var arr=[];if(angular.isUndefined(value)){return}i
               */
 updateSrc=function updateSrc(){var locals,i,o,obj;// default to NOT letting users add new tags in this case.
 scope.options.addable=scope.options.addable||false;scope.srcTags=[];srcResult=parse(attrs.src);source=srcResult.source(scope.$parent);if(angular.isUndefined(source)){return}if(angular.isFunction(srcWatch)){srcWatch()}locals={};if(angular.isDefined(source)){for(i=0;i<source.length;i++){locals[srcResult.itemName]=source[i];obj={};obj.value=srcResult.modelMapper(scope.$parent,locals);o={};if(angular.isObject(obj.value)){o=angular.extend(obj.value,{name:srcResult.viewMapper(scope.$parent,locals),value:obj.value.value,group:obj.value.group})}else{o={name:srcResult.viewMapper(scope.$parent,locals),value:obj.value,group:group}}scope.srcTags.push(o)}}srcWatch=scope.$parent.$watch(srcResult.sourceName,function(newVal,oldVal){if(newVal!==oldVal){updateSrc()}},true)};// merge options
-scope.options=angular.extend(defaults,angular.extend(userDefaults,scope.$eval(attrs.options)));// break out orderBy for view
+scope.options=angular.extend(options,scope.$eval(attrs.options));// break out orderBy for view
 scope.orderBy=scope.options.orderBy;// this should be named something else since it's just a collection
 // of random shit.
 scope.toggles={inputActive:false};/**
